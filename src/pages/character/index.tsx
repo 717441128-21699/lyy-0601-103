@@ -3,25 +3,34 @@ import { View, Text, Image, Input, Button } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { avatarOptions, colorOptions, mockSkills } from '@/data/mockPlayers';
+import { savePlayerProfile, getPlayerProfile } from '@/utils/globalState';
 import classNames from 'classnames';
 
 export default function CharacterPage() {
   const router = useRouter();
   const mode = router.params.mode || 'create';
-  
-  const [selectedAvatar, setSelectedAvatar] = useState(avatarOptions[0].url);
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [selectedSkill, setSelectedSkill] = useState(mockSkills[0]);
-  const [playerName, setPlayerName] = useState('我');
+
+  const savedProfile = getPlayerProfile();
+  const [selectedAvatar, setSelectedAvatar] = useState(savedProfile.avatar || avatarOptions[0].url);
+  const [selectedColor, setSelectedColor] = useState(savedProfile.color || colorOptions[0]);
+  const [selectedSkill, setSelectedSkill] = useState(savedProfile.skill || mockSkills[0]);
+  const [playerName, setPlayerName] = useState(savedProfile.name || '我');
 
   const handleConfirm = () => {
     console.log('[Character] 确认选择:', {
       avatar: selectedAvatar,
       color: selectedColor,
-      skill: selectedSkill.name,
+      skill: selectedSkill?.name,
       name: playerName
     });
-    
+
+    savePlayerProfile({
+      name: playerName || '我',
+      avatar: selectedAvatar,
+      color: selectedColor,
+      skill: selectedSkill
+    });
+
     if (mode === 'create') {
       Taro.navigateTo({
         url: '/pages/room/index?mode=create'
@@ -40,10 +49,10 @@ export default function CharacterPage() {
           mode="aspectFill"
           style={{ borderColor: selectedColor }}
         />
-        <Text className={styles.previewName}>{playerName}</Text>
+        <Text className={styles.previewName}>{playerName || '我'}</Text>
         <Text className={styles.previewSkill}>
-          <Text>{selectedSkill.icon}</Text>
-          <Text> {selectedSkill.name}</Text>
+          <Text>{selectedSkill?.icon}</Text>
+          <Text> {selectedSkill?.name}</Text>
         </Text>
       </View>
 

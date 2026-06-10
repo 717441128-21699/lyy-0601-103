@@ -3,10 +3,10 @@ import { View, Text, Image, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import { dailyChallenges } from '@/data/mockRecords';
-import { currentUser } from '@/data/mockPlayers';
+import { getPlayerProfile } from '@/utils/globalState';
 
 export default function HallPage() {
-  const user = currentUser;
+  const profile = getPlayerProfile();
   const challenges = dailyChallenges;
 
   const handleCreateRoom = () => {
@@ -19,14 +19,18 @@ export default function HallPage() {
   const handleJoinRoom = () => {
     console.log('[Hall] 加入房间');
     Taro.showModal({
-      title: '加入房间',
+      title: '输入房间口令',
       editable: true,
-      placeholderText: '请输入房间口令',
+      placeholderText: '请输入6位房间口令',
       success: (res) => {
         if (res.confirm && res.content) {
-          console.log('[Hall] 输入房间码:', res.content);
+          const code = res.content.trim();
+          if (code.length === 0) {
+            Taro.showToast({ title: '请输入口令', icon: 'none' });
+            return;
+          }
           Taro.navigateTo({
-            url: `/pages/room/index?code=${res.content}`
+            url: `/pages/room/index?mode=join&code=${code}`
           });
         }
       }
@@ -52,11 +56,12 @@ export default function HallPage() {
         <View className={styles.userInfo}>
           <Image
             className={styles.avatar}
-            src={user.avatar}
+            src={profile.avatar}
             mode="aspectFill"
+            style={{ borderColor: profile.color }}
           />
           <View className={styles.userText}>
-            <Text className={styles.userName}>{user.name}</Text>
+            <Text className={styles.userName}>{profile.name}</Text>
             <Text className={styles.userScore}>积分 12,450</Text>
           </View>
         </View>

@@ -11,6 +11,9 @@ const colors = [
   { name: '粉色', value: '#ec4899' }
 ];
 
+export const COLOR_MAP: Record<string, string> = {};
+colors.forEach(c => { COLOR_MAP[c.name] = c.value; });
+
 const directions = [
   { name: '上', value: 'up', arrow: '↑' },
   { name: '下', value: 'down', arrow: '↓' },
@@ -90,39 +93,3 @@ export function generateRandomQuestion(): Question {
       return generateColorQuestion();
   }
 }
-
-export const mockQuestions: Question[] = Array.from({ length: 20 }, (_, i) => {
-  const types: ('color' | 'number' | 'direction')[] = ['color', 'number', 'direction'];
-  const type = types[i % 3];
-  
-  if (type === 'color') {
-    const color = colors[i % colors.length];
-    return {
-      id: `q-${i}`,
-      type: 'color',
-      content: color.value,
-      answer: color.name,
-      options: shuffleArray(colors.slice(0, 4).map(c => c.name)),
-      color: color.value
-    };
-  } else if (type === 'number') {
-    const num = i % 10;
-    return {
-      id: `q-${i}`,
-      type: 'number',
-      content: num.toString(),
-      answer: num.toString(),
-      options: shuffleArray([num, (num + 1) % 10, (num + 2) % 10, (num + 3) % 10]).map(n => n.toString())
-    };
-  } else {
-    const dir = directions[i % directions.length];
-    return {
-      id: `q-${i}`,
-      type: 'direction',
-      content: dir.arrow,
-      answer: dir.name,
-      options: shuffleArray(directions.map(d => d.name)),
-      direction: dir.value as 'up' | 'down' | 'left' | 'right'
-    };
-  }
-});

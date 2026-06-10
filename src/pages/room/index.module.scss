@@ -260,3 +260,147 @@
   color: $color-primary;
   text-decoration: underline;
 }
+
+.playerCardMe {
+  border: 2rpx solid $color-primary;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.meBadge {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  background: $color-primary;
+  color: $color-text-white;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+}
+
+.spectatorMe {
+  .spectatorAvatar {
+    border-color: $color-primary;
+    border-width: 4rpx;
+  }
+}
+
+.btnReady {
+  background: $color-success;
+  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
+}
+
+.shareDialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.shareDialogContent {
+  width: 600rpx;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: 48rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.shareDialogTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.shareCodeBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  background: $color-bg-hover;
+  padding: 32rpx 64rpx;
+  border-radius: $radius-lg;
+}
+
+.shareCodeLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.shareCodeValue {
+  font-size: 56rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  letter-spacing: 12rpx;
+}
+
+.shareActions {
+  display: flex;
+  gap: $spacing-md;
+  width: 100%;
+}
+
+.shareActionBtn {
+  @include button-reset;
+  flex: 1;
+  height: 80rpx;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  background: $color-bg-hover;
+  color: $color-text-primary;
+  
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.shareTip {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: center;
+}
+
+.shareCloseBtn {
+  @include button-reset;
+  width: 100%;
+  height: 72rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+  
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.qrCodeBox {
+  padding: 32rpx;
+  background: #ffffff;
+  border-radius: $radius-lg;
+}
+
+.qrCodeGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 72rpx);
+  grid-template-rows: repeat(5, 72rpx);
+  gap: 4rpx;
+}
+
+.qrCodeCell {
+  width: 72rpx;
+  height: 72rpx;
+  background: #ffffff;
+}
+
+.qrCellDark {
+  background: #1e293b;
+}

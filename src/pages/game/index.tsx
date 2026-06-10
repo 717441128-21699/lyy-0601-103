@@ -1,17 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, Image, Button, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
-import { mockPlayers, currentUser, mockSkills } from '@/data/mockPlayers';
-import { generateRandomQuestion } from '@/data/mockQuestions';
+import { mockPlayers, mockSkills } from '@/data/mockPlayers';
+import { generateRandomQuestion, COLOR_MAP } from '@/data/mockQuestions';
 import { mockItems } from '@/data/mockItems';
 import { formatTime, getRankIcon } from '@/utils/gameUtils';
+import { getPlayerProfile, getMyItems } from '@/utils/globalState';
 import classNames from 'classnames';
-import type { Question, Player } from '@/types/game';
+import type { Question, Player, Skill } from '@/types/game';
 
 type GamePhase = 'countdown' | 'playing' | 'result';
 
 export default function GamePage() {
+  const router = useRouter();
+  const profile = getPlayerProfile();
+  const isSpectatorParam = router.params.isSpectator === '1';
+
+  const mySkill: Skill = profile.skill || mockSkills[0];
+  const myItemsList = getMyItems().filter(i => i.type !== 'emoji').slice(0, 3);
+
   const [gamePhase, setGamePhase] = useState<GamePhase>('countdown');
   const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(180);
@@ -24,23 +32,28 @@ export default function GamePage() {
   const [wrongCount, setWrongCount] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [players, setPlayers] = useState<Player[]>(mockPlayers.slice(0, 4));
+  const [isSpectator, setIsSpectator] = useState(isSpectatorParam);
+  const [players, setPlayers] = useState<Player[]>(mockPlayers.slice(0, 4).map(p => ({ ...p, score: 0, combo: 0 })));
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [floatingEmojis, setFloatingEmojis] = useState<
     { id: number; emoji: string; x: number; y: number }[]
   >([]);
   const [skillCooldown, setSkillCooldown] = useState(0);
   const [shieldActive, setShieldActive] = useState(false);
+  const [itemCounts, setItemCounts] = useState<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    myItemsList.forEach(i => { counts[i.id] = i.count || 0; });
+    return counts;
+  });
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const questionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const emojiIdRef = useRef(0);
 
-  const items = mockItems.filter((i) => i.type !== 'emoji').slice(0, 3);
   const emojis = ['👍', '😂', '😠', '💪', '🎉', '❤️'];
 
   const startGame = useCallback(() => {
-    console.log('[Game] 开始游戏');
+    console.log('[Game] 开始游戏, 观战:', isSpectator);
     setGamePhase('playing');
     setTimeLeft(180);
     setMyScore(0);
@@ -60,7 +73,7 @@ export default function GamePage() {
         return prev - 1;
       });
     }, 1000);
-  }, []);
+  }, [isSpectator]);
 
   useEffect(() => {
     if (gamePhase === 'countdown') {
@@ -103,7 +116,7 @@ export default function GamePage() {
   }, []);
 
   const handleAnswer = (answer: string) => {
-    if (selectedOption !== null || !currentQuestion) return;
+    if (selectedOption !== null || !currentQuestion || isSpectator) return;
 
     setSelectedOption(answer);
     const correct = answer === currentQuestion.answer;
@@ -135,7 +148,6 @@ export default function GamePage() {
   const simulateOtherPlayers = () => {
     setPlayers((prev) =>
       prev.map((p) => {
-        if (p.id === 'me') return p;
         const shouldAnswer = Math.random() > 0.3;
         if (shouldAnswer) {
           const isCorrect = Math.random() > 0.4;
@@ -159,24 +171,29 @@ export default function GamePage() {
     );
   };
 
-  const endGame = () => {
+  const endGame = useCallback(() => {
     console.log('[Game] 游戏结束');
     if (timerRef.current) clearInterval(timerRef.current);
     if (questionTimerRef.current) clearTimeout(questionTimerRef.current);
     setGamePhase('result');
-  };
+  }, []);
 
   const handleUseItem = (itemId: string) => {
+    const currentCount = itemCounts[itemId] || 0;
+    if (currentCount <= 0) {
+      Taro.showToast({ title: '道具已用完', icon: 'none' });
+      return;
+    }
+
     console.log('[Game] 使用道具:', itemId);
-    const item = items.find((i) => i.id === itemId);
+    const item = myItemsList.find(i => i.id === itemId);
     if (!item) return;
+
+    setItemCounts(prev => ({ ...prev, [itemId]: currentCount - 1 }));
 
     if (item.type === 'shield') {
       setShieldActive(true);
-      Taro.showToast({
-        title: '护盾已激活',
-        icon: 'none'
-      });
+      Taro.showToast({ title: '护盾已激活', icon: 'none' });
     } else if (item.type === 'interfere') {
       Taro.showActionSheet({
         itemList: players.filter((p) => !p.isSpectator).map((p) => p.name),
@@ -187,33 +204,27 @@ export default function GamePage() {
           });
         }
       });
+    } else if (item.type === 'bonus') {
+      Taro.showToast({ title: `${item.name}已激活`, icon: 'none' });
     }
   };
 
   const handleUseSkill = () => {
     if (skillCooldown > 0) {
-      Taro.showToast({
-        title: `冷却中 ${skillCooldown}s`,
-        icon: 'none'
-      });
+      Taro.showToast({ title: `冷却中 ${skillCooldown}s`, icon: 'none' });
       return;
     }
-    console.log('[Game] 使用技能');
-    setSkillCooldown(mockSkills[0].cooldown);
-    Taro.showToast({
-      title: `${mockSkills[0].name} 已释放`,
-      icon: 'none'
-    });
+    console.log('[Game] 使用技能:', mySkill.name);
+    setSkillCooldown(mySkill.cooldown);
+    Taro.showToast({ title: `${mySkill.name} 已释放`, icon: 'none' });
   };
 
   const handleSendEmoji = (emoji: string) => {
     const id = emojiIdRef.current++;
     const x = Math.random() * 400 + 100;
     const y = Math.random() * 200 + 300;
-
     setFloatingEmojis((prev) => [...prev, { id, emoji, x, y }]);
     setShowEmojiPicker(false);
-
     setTimeout(() => {
       setFloatingEmojis((prev) => prev.filter((e) => e.id !== id));
     }, 2000);
@@ -224,6 +235,9 @@ export default function GamePage() {
     setGamePhase('countdown');
     setCountdown(3);
     setPlayers(mockPlayers.slice(0, 4).map((p) => ({ ...p, score: 0, combo: 0 })));
+    const counts: Record<string, number> = {};
+    myItemsList.forEach(i => { counts[i.id] = i.count || 0; });
+    setItemCounts(counts);
   };
 
   const handleBackToRoom = () => {
@@ -234,17 +248,71 @@ export default function GamePage() {
   const finalRank = () => {
     const allPlayers = [
       ...players.filter((p) => !p.isSpectator),
-      { ...currentUser, score: myScore, isMe: true }
     ];
+    if (!isSpectator) {
+      allPlayers.push({
+        id: 'me',
+        name: profile.name,
+        avatar: profile.avatar,
+        color: profile.color,
+        score: myScore,
+        combo: myCombo,
+        maxCombo: myMaxCombo,
+        isReady: true,
+        isHost: true,
+        isSpectator: false,
+        skill: mySkill,
+        shieldActive,
+        correctCount,
+        wrongCount,
+        isMe: true
+      } as Player & { isMe: boolean });
+    }
     return allPlayers.sort((a, b) => b.score - a.score);
   };
 
-  const myRank = finalRank().findIndex((p) => 'isMe' in p && p.isMe) + 1;
+  const myRank = isSpectator ? 0 : finalRank().findIndex((p) => 'isMe' in p && p.isMe) + 1;
 
   const getTimerClass = () => {
     if (timeLeft <= 10) return styles.timerDanger;
     if (timeLeft <= 30) return styles.timerWarning;
     return '';
+  };
+
+  const renderOption = (option: string) => {
+    const isSelected = selectedOption === option;
+    const showCorrect = selectedOption !== null && option === currentQuestion?.answer;
+    const showWrong = isSelected && !isCorrect;
+
+    if (currentQuestion?.type === 'color') {
+      const colorValue = COLOR_MAP[option] || '#999';
+      return (
+        <View
+          key={option}
+          className={classNames(styles.colorOptionBtn, {
+            [styles.optionCorrect]: showCorrect,
+            [styles.optionWrong]: showWrong
+          })}
+          onClick={() => handleAnswer(option)}
+        >
+          <View className={styles.colorOptionBlock} style={{ backgroundColor: colorValue }} />
+          <Text className={styles.colorOptionName}>{option}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <Button
+        key={option}
+        className={classNames(styles.optionBtn, {
+          [styles.optionCorrect]: showCorrect,
+          [styles.optionWrong]: showWrong
+        })}
+        onClick={() => handleAnswer(option)}
+      >
+        {option}
+      </Button>
+    );
   };
 
   return (
@@ -264,22 +332,27 @@ export default function GamePage() {
                 {formatTime(timeLeft)}
               </Text>
             </View>
-            {myCombo > 0 && (
+            {myCombo > 0 && !isSpectator && (
               <Text className={styles.comboBadge}>🔥 {myCombo} 连击</Text>
+            )}
+            {isSpectator && (
+              <Text className={styles.comboBadge}>👀 观战中</Text>
             )}
           </View>
 
           <ScrollView scrollX className={styles.scoreBoard}>
-            <View className={styles.playerScoreItem}>
-              <Image
-                className={styles.playerScoreAvatar}
-                src={currentUser.avatar}
-                mode="aspectFill"
-                style={{ borderColor: currentUser.color }}
-              />
-              <Text className={styles.playerScoreName}>我</Text>
-              <Text className={styles.playerScoreValue}>{myScore}</Text>
-            </View>
+            {!isSpectator && (
+              <View className={styles.playerScoreItem}>
+                <Image
+                  className={styles.playerScoreAvatar}
+                  src={profile.avatar}
+                  mode="aspectFill"
+                  style={{ borderColor: profile.color }}
+                />
+                <Text className={styles.playerScoreName}>{profile.name}</Text>
+                <Text className={styles.playerScoreValue}>{myScore}</Text>
+              </View>
+            )}
             {players.map((player) => (
               <View key={player.id} className={styles.playerScoreItem}>
                 <Image
@@ -326,67 +399,40 @@ export default function GamePage() {
             )}
 
             <View className={styles.optionsGrid}>
-              {currentQuestion.options.map((option) => {
-                const isSelected = selectedOption === option;
-                const showCorrect = selectedOption !== null && option === currentQuestion.answer;
-                const showWrong = isSelected && !isCorrect;
-
-                return currentQuestion.type === 'color' ? (
-                  <View
-                    key={option}
-                    className={classNames(styles.colorOption, {
-                      [styles.optionCorrect]: showCorrect,
-                      [styles.optionWrong]: showWrong
-                    })}
-                    onClick={() => handleAnswer(option)}
-                  />
-                ) : (
-                  <Button
-                    key={option}
-                    className={classNames(styles.optionBtn, {
-                      [styles.optionCorrect]: showCorrect,
-                      [styles.optionWrong]: showWrong
-                    })}
-                    onClick={() => handleAnswer(option)}
-                  >
-                    {option}
-                  </Button>
-                );
-              })}
+              {currentQuestion.options.map((option) => renderOption(option))}
             </View>
           </View>
 
-          <View className={styles.toolBar}>
-            <View className={styles.itemList}>
-              <Button
-                className={styles.itemBtn}
-                onClick={handleUseSkill}
-              >
-                {mockSkills[0].icon}
-                {skillCooldown > 0 && (
-                  <View className={styles.skillCooldown}>{skillCooldown}</View>
-                )}
-              </Button>
-              {items.map((item) => (
-                <Button
-                  key={item.id}
-                  className={styles.itemBtn}
-                  onClick={() => handleUseItem(item.id)}
-                >
-                  {item.icon}
-                  {item.count !== undefined && item.count > 0 && (
-                    <Text className={styles.itemCount}>{item.count}</Text>
+          {!isSpectator && (
+            <View className={styles.toolBar}>
+              <View className={styles.itemList}>
+                <Button className={styles.itemBtn} onClick={handleUseSkill}>
+                  {mySkill.icon}
+                  {skillCooldown > 0 && (
+                    <View className={styles.skillCooldown}>{skillCooldown}</View>
                   )}
                 </Button>
-              ))}
+                {myItemsList.map((item) => (
+                  <Button
+                    key={item.id}
+                    className={styles.itemBtn}
+                    onClick={() => handleUseItem(item.id)}
+                  >
+                    {item.icon}
+                    {(itemCounts[item.id] || 0) > 0 && (
+                      <Text className={styles.itemCount}>{itemCounts[item.id]}</Text>
+                    )}
+                  </Button>
+                ))}
+              </View>
+              <Button
+                className={styles.emojiBtn}
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              >
+                😀
+              </Button>
             </View>
-            <Button
-              className={styles.emojiBtn}
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            >
-              😀
-            </Button>
-          </View>
+          )}
 
           {showEmojiPicker && (
             <View className={styles.emojiPicker}>
@@ -419,35 +465,43 @@ export default function GamePage() {
           <View className={styles.resultContainer}>
             <View className={styles.resultHeader}>
               <Text className={styles.resultTitle}>游戏结束</Text>
-              <Text className={styles.resultRank}>
-                {getRankIcon(myRank)} 第 {myRank} 名
-              </Text>
-              <Text className={styles.resultScore}>
-                最终得分：
-                <Text className={styles.resultScoreValue}>
-                  {myScore.toLocaleString()}
-                </Text>
-              </Text>
+              {isSpectator ? (
+                <Text className={styles.resultRank}>👀 观战模式</Text>
+              ) : (
+                <>
+                  <Text className={styles.resultRank}>
+                    {getRankIcon(myRank)} 第 {myRank} 名
+                  </Text>
+                  <Text className={styles.resultScore}>
+                    最终得分：
+                    <Text className={styles.resultScoreValue}>
+                      {myScore.toLocaleString()}
+                    </Text>
+                  </Text>
+                </>
+              )}
             </View>
 
-            <View className={styles.statsRow}>
-              <View className={styles.statItem}>
-                <Text className={styles.statValue}>{correctCount}</Text>
-                <Text className={styles.statLabel}>正确</Text>
+            {!isSpectator && (
+              <View className={styles.statsRow}>
+                <View className={styles.statItem}>
+                  <Text className={styles.statValue}>{correctCount}</Text>
+                  <Text className={styles.statLabel}>正确</Text>
+                </View>
+                <View className={styles.statItem}>
+                  <Text className={styles.statValue}>{wrongCount}</Text>
+                  <Text className={styles.statLabel}>错误</Text>
+                </View>
+                <View className={styles.statItem}>
+                  <Text className={styles.statValue}>{myMaxCombo}</Text>
+                  <Text className={styles.statLabel}>最高连击</Text>
+                </View>
+                <View className={styles.statItem}>
+                  <Text className={styles.statValue}>{questionIndex}</Text>
+                  <Text className={styles.statLabel}>答题数</Text>
+                </View>
               </View>
-              <View className={styles.statItem}>
-                <Text className={styles.statValue}>{wrongCount}</Text>
-                <Text className={styles.statLabel}>错误</Text>
-              </View>
-              <View className={styles.statItem}>
-                <Text className={styles.statValue}>{myMaxCombo}</Text>
-                <Text className={styles.statLabel}>最高连击</Text>
-              </View>
-              <View className={styles.statItem}>
-                <Text className={styles.statValue}>{questionIndex}</Text>
-                <Text className={styles.statLabel}>答题数</Text>
-              </View>
-            </View>
+            )}
 
             <Text className={styles.rankListTitle}>本局排名</Text>
             <View className={styles.rankList}>
