@@ -1,0 +1,254 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: 0 $page-padding;
+  padding-top: 32rpx;
+  box-sizing: border-box;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 140rpx);
+}
+
+.previewCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 32rpx;
+  box-shadow: $shadow-card;
+}
+
+.previewAvatar {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: $radius-round;
+  border: 6rpx solid $color-primary;
+  box-shadow: 0 8rpx 24rpx rgba(99, 102, 241, 0.25);
+}
+
+.previewName {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.previewSkill {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 20rpx;
+}
+
+.avatarSection {
+  margin-bottom: 32rpx;
+}
+
+.avatarGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20rpx;
+  background: $color-bg-card;
+  padding: 24rpx;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.avatarItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarOption {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: $radius-round;
+  border: 4rpx solid transparent;
+  transition: all $transition-base;
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.avatarSelected {
+  border-color: $color-primary;
+  box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.3);
+}
+
+.selectedCheck {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  width: 36rpx;
+  height: 36rpx;
+  background: $color-primary;
+  color: $color-text-white;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  font-weight: $font-weight-bold;
+}
+
+.skillSection {
+  margin-bottom: 32rpx;
+}
+
+.skillList {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.skillCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  box-shadow: $shadow-card;
+  border: 3rpx solid transparent;
+  transition: all $transition-base;
+  
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.skillCardSelected {
+  border-color: $color-primary;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.skillIcon {
+  width: 80rpx;
+  height: 80rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+}
+
+.skillInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.skillName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.skillDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.skillCooldown {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.colorSection {
+  margin-bottom: 32rpx;
+}
+
+.colorList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+  background: $color-bg-card;
+  padding: 24rpx;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.colorItem {
+  position: relative;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-round;
+  border: 4rpx solid $color-bg-card;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  transition: all $transition-base;
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.colorSelected {
+  border-color: $color-text-primary;
+  transform: scale(1.1);
+}
+
+.colorCheck {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: $color-text-white;
+  font-size: 24rpx;
+  font-weight: $font-weight-bold;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: 24rpx $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24rpx);
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+.confirmBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  background: $color-primary-gradient;
+  color: $color-text-white;
+  box-shadow: 0 8rpx 24rpx rgba(99, 102, 241, 0.3);
+  
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+.nameInputSection {
+  margin-bottom: 32rpx;
+}
+
+.nameInput {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 24rpx;
+  box-shadow: $shadow-card;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}

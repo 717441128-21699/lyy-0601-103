@@ -1,0 +1,239 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: 0 $page-padding;
+  padding-top: 24rpx;
+  box-sizing: border-box;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.tabs {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 8rpx;
+  margin-bottom: 32rpx;
+  box-shadow: $shadow-card;
+}
+
+.tabItem {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+}
+
+.tabActive {
+  background: $color-primary-gradient;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 24rpx;
+  margin-bottom: 32rpx;
+  padding: 32rpx 0;
+}
+
+.podiumItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.podiumItem:nth-child(2) {
+  order: 1;
+}
+
+.podiumItem:first-child {
+  order: 0;
+}
+
+.podiumItem:nth-child(3) {
+  order: 2;
+}
+
+.podiumAvatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: $radius-round;
+  border: 4rpx solid $color-bg-card;
+  box-shadow: $shadow-card;
+}
+
+.podiumAvatarFirst {
+  width: 120rpx;
+  height: 120rpx;
+  border-color: #fbbf24;
+  border-width: 6rpx;
+}
+
+.podiumName {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  max-width: 120rpx;
+  @include text-ellipsis;
+}
+
+.podiumScore {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.podiumRank {
+  font-size: 48rpx;
+}
+
+.podiumPedestal {
+  width: 140rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md $radius-md 0 0;
+}
+
+.pedestalFirst {
+  height: 120rpx;
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.pedestalSecond {
+  height: 90rpx;
+  background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%);
+}
+
+.pedestalThird {
+  height: 70rpx;
+  background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+}
+
+.rankList {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.rankCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 24rpx;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+  
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.rankCardMe {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border: 2rpx solid $color-primary;
+}
+
+.rankNumber {
+  width: 48rpx;
+  text-align: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-tertiary;
+}
+
+.rankAvatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-round;
+}
+
+.rankInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.rankName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.friendBadge {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: rgba(99, 102, 241, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: $radius-round;
+}
+
+.rankDetail {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.rankScoreSection {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.rankScore {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.rankWinRate {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.myRankSection {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 100rpx);
+  left: $page-padding;
+  right: $page-padding;
+  max-width: $max-content-width;
+  margin: 0 auto;
+  z-index: 100;
+}
+
+.myRankCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 24rpx;
+  box-shadow: $shadow-float;
+  border: 2rpx solid $color-primary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.myRankLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: 4rpx;
+}
+
+.myRankNumber {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}

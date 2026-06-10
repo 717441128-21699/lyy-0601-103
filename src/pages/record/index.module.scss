@@ -1,0 +1,234 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: 0 $page-padding;
+  padding-top: 32rpx;
+  box-sizing: border-box;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+  margin-bottom: 32rpx;
+}
+
+.statCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 28rpx;
+  box-shadow: $shadow-card;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.statValue {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.statHighlight {
+  color: $color-accent-orange;
+}
+
+.statSuccess {
+  color: $color-success;
+}
+
+.statPink {
+  color: $color-accent-pink;
+}
+
+.compareSection {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 28rpx;
+  box-shadow: $shadow-card;
+  margin-bottom: 32rpx;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.compareBtn {
+  @include button-reset;
+  height: 56rpx;
+  padding: 0 24rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  background: $color-primary;
+  color: $color-text-white;
+  
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.comparePlayers {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.comparePlayer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.compareAvatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: $radius-round;
+  border: 4rpx solid $color-border;
+}
+
+.compareName {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.compareScore {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.compareVs {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-tertiary;
+}
+
+.tabs {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 8rpx;
+  margin-bottom: 24rpx;
+  box-shadow: $shadow-card;
+}
+
+.tabItem {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+}
+
+.tabActive {
+  background: $color-primary;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.recordList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.recordCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 28rpx;
+  box-shadow: $shadow-card;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.recordHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.recordRank {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.rankBadge {
+  font-size: 36rpx;
+}
+
+.rankText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+}
+
+.rankWin {
+  color: $color-success;
+}
+
+.rankLose {
+  color: $color-text-secondary;
+}
+
+.recordDate {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.recordScore {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.recordStats {
+  display: flex;
+  gap: $spacing-lg;
+}
+
+.recordStatItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.recordStatValue {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.recordStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 80rpx 0;
+  color: $color-text-tertiary;
+  font-size: $font-size-md;
+}
