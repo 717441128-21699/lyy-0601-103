@@ -6,7 +6,7 @@ import { mockPlayers, mockSkills } from '@/data/mockPlayers';
 import { generateRandomQuestion, COLOR_MAP } from '@/data/mockQuestions';
 import { mockItems } from '@/data/mockItems';
 import { formatTime, getRankIcon } from '@/utils/gameUtils';
-import { getPlayerProfile, getMyItems } from '@/utils/globalState';
+import { getPlayerProfile, getMyItems, addGameRecord, updateRankAfterGame, saveRoomToRegistry } from '@/utils/globalState';
 import classNames from 'classnames';
 import type { Question, Player, Skill } from '@/types/game';
 
@@ -176,7 +176,43 @@ export default function GamePage() {
     if (timerRef.current) clearInterval(timerRef.current);
     if (questionTimerRef.current) clearTimeout(questionTimerRef.current);
     setGamePhase('result');
-  }, []);
+
+    if (!isSpectator) {
+      const rank = finalRank();
+      const myPosition = rank.findIndex((p) => 'isMe' in p && p.isMe) + 1;
+      const isWin = myPosition === 1;
+      const playerCount = rank.length;
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      addGameRecord({
+        id: `record-${Date.now()}`,
+        date: dateStr,
+        duration: 180,
+        playerCount,
+        rank: myPosition,
+        score: myScore,
+        correctCount,
+        wrongCount,
+        maxCombo: myMaxCombo,
+        isWin
+      });
+
+      updateRankAfterGame(myScore, isWin);
+    }
+
+    const roomCodeParam = router.params.roomCode;
+    if (roomCodeParam) {
+      saveRoomToRegistry({
+        code: roomCodeParam,
+        hostId: 'me',
+        players: players.map(p => ({ ...p, score: 0, combo: 0 })),
+        spectators: [],
+        status: 'ended',
+        gameTime: 180
+      });
+    }
+  }, [isSpectator, myScore, correctCount, wrongCount, myMaxCombo, players, router.params.roomCode]);
 
   const handleUseItem = (itemId: string) => {
     const currentCount = itemCounts[itemId] || 0;

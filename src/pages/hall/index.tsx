@@ -1,23 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import { dailyChallenges } from '@/data/mockRecords';
-import { getPlayerProfile } from '@/utils/globalState';
+import { getPlayerProfile, getMyCoins, getRoomFromRegistry } from '@/utils/globalState';
 
 export default function HallPage() {
   const profile = getPlayerProfile();
+  const [myCoins, setMyCoins] = useState(0);
+
+  useEffect(() => {
+    setMyCoins(getMyCoins());
+  }, []);
+
   const challenges = dailyChallenges;
 
   const handleCreateRoom = () => {
-    console.log('[Hall] 创建房间');
     Taro.navigateTo({
       url: '/pages/character/index?mode=create'
     });
   };
 
   const handleJoinRoom = () => {
-    console.log('[Hall] 加入房间');
+    Taro.showActionSheet({
+      itemList: ['🔑 输入口令加入', '📷 扫码加入'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          handleJoinByCode();
+        } else {
+          handleScanQRCode();
+        }
+      }
+    });
+  };
+
+  const handleJoinByCode = () => {
     Taro.showModal({
       title: '输入房间口令',
       editable: true,
@@ -29,6 +46,15 @@ export default function HallPage() {
             Taro.showToast({ title: '请输入口令', icon: 'none' });
             return;
           }
+          const existing = getRoomFromRegistry(code);
+          if (!existing) {
+            Taro.showToast({ title: '未找到该房间，请检查口令', icon: 'none' });
+            return;
+          }
+          if (existing.status === 'playing') {
+            Taro.showToast({ title: '该房间正在游戏中，请稍后再试', icon: 'none' });
+            return;
+          }
           Taro.navigateTo({
             url: `/pages/room/index?mode=join&code=${code}`
           });
@@ -37,8 +63,38 @@ export default function HallPage() {
     });
   };
 
+  const handleScanQRCode = () => {
+    Taro.scanCode({
+      onlyFromCamera: false,
+      scanType: ['qrCode', 'barCode'],
+      success: (res) => {
+        const result = res.result || '';
+        const codeMatch = result.match(/room[_=]([A-Za-z0-9]{4,8})/i) || result.match(/^([A-Za-z0-9]{4,8})$/);
+        if (codeMatch && codeMatch[1]) {
+          const code = codeMatch[1].toUpperCase();
+          const existing = getRoomFromRegistry(code);
+          if (existing) {
+            if (existing.status === 'playing') {
+              Taro.showToast({ title: '该房间正在游戏中', icon: 'none' });
+              return;
+            }
+            Taro.navigateTo({
+              url: `/pages/room/index?mode=join&code=${code}`
+            });
+          } else {
+            Taro.showToast({ title: `未找到房间 ${code}，口令无效`, icon: 'none' });
+          }
+        } else {
+          Taro.showToast({ title: '无法识别房间码，请重试', icon: 'none' });
+        }
+      },
+      fail: () => {
+        Taro.showToast({ title: '扫码取消或失败', icon: 'none' });
+      }
+    });
+  };
+
   const handleQuickMatch = () => {
-    console.log('[Hall] 快速匹配');
     Taro.showLoading({ title: '匹配中...' });
     setTimeout(() => {
       Taro.hideLoading();
@@ -62,7 +118,7 @@ export default function HallPage() {
           />
           <View className={styles.userText}>
             <Text className={styles.userName}>{profile.name}</Text>
-            <Text className={styles.userScore}>积分 12,450</Text>
+            <Text className={styles.userScore}>积分 {myCoins.toLocaleString()}</Text>
           </View>
         </View>
         <View className={styles.seasonBadge}>

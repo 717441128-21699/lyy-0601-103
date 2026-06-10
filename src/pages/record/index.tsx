@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
-import { mockGameRecords, friendRankList } from '@/data/mockRecords';
+import { getPlayerProfile, loadGlobalState } from '@/utils/globalState';
+import { friendRankList as defaultFriendRank } from '@/data/mockRecords';
 import { getRankIcon } from '@/utils/gameUtils';
 import classNames from 'classnames';
+import type { GameRecord, RankItem } from '@/types/game';
 
 type TabType = 'all' | 'win' | 'lose';
 
 export default function RecordPage() {
+  const profile = getPlayerProfile();
   const [activeTab, setActiveTab] = useState<TabType>('all');
-  const records = mockGameRecords;
+  const [records, setRecords] = useState<GameRecord[]>([]);
+  const [friends, setFriends] = useState<RankItem[]>(defaultFriendRank);
+
+  useEffect(() => {
+    const state = loadGlobalState();
+    setRecords(state.gameRecords);
+    setFriends(state.friendRank);
+  }, []);
 
   const filteredRecords = records.filter((record) => {
     if (activeTab === 'win') return record.isWin;
@@ -21,13 +31,12 @@ export default function RecordPage() {
   const totalGames = records.length;
   const winGames = records.filter((r) => r.isWin).length;
   const winRate = totalGames > 0 ? Math.round((winGames / totalGames) * 100) : 0;
-  const maxCombo = Math.max(...records.map((r) => r.maxCombo));
+  const maxCombo = records.length > 0 ? Math.max(...records.map((r) => r.maxCombo)) : 0;
   const totalScore = records.reduce((sum, r) => sum + r.score, 0);
 
   const handleCompare = () => {
-    console.log('[Record] 好友对比');
     Taro.showActionSheet({
-      itemList: friendRankList
+      itemList: friends
         .filter((p) => !p.isMe)
         .map((p) => p.playerName),
       success: (res) => {
@@ -35,6 +44,8 @@ export default function RecordPage() {
       }
     });
   };
+
+  const meFriend = friends.find(f => f.isMe);
 
   return (
     <View className={styles.page}>
@@ -74,21 +85,21 @@ export default function RecordPage() {
           <View className={styles.comparePlayer}>
             <Image
               className={styles.compareAvatar}
-              src="https://picsum.photos/id/1025/200/200"
+              src={profile.avatar}
               mode="aspectFill"
             />
-            <Text className={styles.compareName}>我</Text>
-            <Text className={styles.compareScore}>12,450</Text>
+            <Text className={styles.compareName}>{profile.name}</Text>
+            <Text className={styles.compareScore}>{meFriend?.score.toLocaleString() || '0'}</Text>
           </View>
           <Text className={styles.compareVs}>VS</Text>
           <View className={styles.comparePlayer}>
             <Image
               className={styles.compareAvatar}
-              src="https://picsum.photos/id/64/200/200"
+              src={friends.find(f => !f.isMe)?.avatar || 'https://picsum.photos/id/64/200/200'}
               mode="aspectFill"
             />
-            <Text className={styles.compareName}>闪电侠</Text>
-            <Text className={styles.compareScore}>15,680</Text>
+            <Text className={styles.compareName}>{friends.find(f => !f.isMe)?.playerName || '好友'}</Text>
+            <Text className={styles.compareScore}>{friends.find(f => !f.isMe)?.score.toLocaleString() || '0'}</Text>
           </View>
         </View>
       </View>

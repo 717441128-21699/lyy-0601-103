@@ -1,25 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image } from '@tarojs/components';
 import styles from './index.module.scss';
-import { seasonRankList, dailyRankList, friendRankList } from '@/data/mockRecords';
+import { loadGlobalState } from '@/utils/globalState';
 import { getRankIcon } from '@/utils/gameUtils';
 import classNames from 'classnames';
+import type { RankItem } from '@/types/game';
 
 type TabType = 'season' | 'daily' | 'friend';
 
 export default function RankPage() {
   const [activeTab, setActiveTab] = useState<TabType>('season');
+  const [seasonData, setSeasonData] = useState<RankItem[]>([]);
+  const [dailyData, setDailyData] = useState<RankItem[]>([]);
+  const [friendData, setFriendData] = useState<RankItem[]>([]);
 
-  const getRankData = () => {
+  useEffect(() => {
+    const state = loadGlobalState();
+    setSeasonData(state.seasonRank);
+    setDailyData(state.dailyRank);
+    setFriendData(state.friendRank);
+  }, []);
+
+  const getRankData = (): RankItem[] => {
     switch (activeTab) {
-      case 'season':
-        return seasonRankList;
-      case 'daily':
-        return dailyRankList;
-      case 'friend':
-        return friendRankList;
-      default:
-        return seasonRankList;
+      case 'season': return seasonData;
+      case 'daily': return dailyData;
+      case 'friend': return friendData;
+      default: return seasonData;
     }
   };
 
